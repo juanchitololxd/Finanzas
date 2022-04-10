@@ -1,0 +1,17 @@
+comandos Git
+
+git add .
+
+git commit -m "comment"
+
+git push -u origin nombre_rama
+
+
+
+git merge (pararse en la rama que quedará)
+
+git status
+
+1) add . commit -m "", pararse en la rama que quedará, merge {nombre rama a mezclar} push -u origin nombre_rama
+
+
