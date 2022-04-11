@@ -13,6 +13,9 @@ class Test:
 
     def end(self):
         self.root.destroy()
+
 app = Test()
+
 app.start()
 app.end()
+
