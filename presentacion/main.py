@@ -56,7 +56,8 @@ class App:
     def discardChanges():
         Finanzas.saveChanges("N")
 
-    def end(self):
+    @staticmethod
+    def end():
         """
         Termina la ejecución de la GUI y de la conexión
         :return:
@@ -73,6 +74,5 @@ def main():
     a = App()
     a.start()
     a.end()
-
 
 main()

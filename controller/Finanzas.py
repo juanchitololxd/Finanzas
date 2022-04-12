@@ -1,21 +1,51 @@
-from dominio.connection import ConnectionOracle
+from dominio.connection import ConnectionSql
 from datetime import datetime
 from dateutil import relativedelta
 import json
 
 
+class Fecha:
+    def __init__(self, frmt):
+        self.format = str(frmt)
+        self.today = datetime.now()
+        self.initDate = datetime(self.today.year, self.today.month, 1)
+        aux = self.today + relativedelta.relativedelta(months=1)
+        self.nextDate = datetime(aux.year, aux.month, 1)
+
+    def getCurrentDate(self):
+        return self.today
+
+    def getInitialDate(self):
+        return self.initDate
+
+    def getNextDate(self):
+        return self.nextDate
+
+    def getCurrentDateF(self):
+        return self.today.strftime(self.format)
+
+    def getInitialDateF(self):
+        return self.initDate.strftime(self.format)
+
+    def getNextDateF(self):
+        return self.nextDate.strftime(self.format)
+
+
 class Finanzas:
-    con = ConnectionOracle("jp", "jp2")
-    hoy = datetime.now()
+
+    con = ConnectionSql()
+    fecha = Fecha('%x')
+    hoy = fecha.getCurrentDate()
+    nextFecha = fecha.getNextDate()
+    initFecha = fecha.getInitialDate()
     saldos = {}
-    nextFecha = hoy + relativedelta.relativedelta(months=1)  # proximo mes
-    query = "SELECT * FROM CATEGORIAS WHERE VF = 'F' AND M =" + str(hoy.month) + " AND A =" + str(hoy.year) + \
-            " order by cat asc"
+
+    query = "SELECT * FROM CATEGORIAS WHERE VF = 'F' AND M =" + str(hoy.strftime('%m')) + " AND A =" + \
+            str(hoy.strftime('%y')) + " order by cat asc"
 
     @staticmethod
     def cargarSaldos():
-        Finanzas.saldos = Finanzas.getFunctionJson("getSaldos(TO_DATE('" + str(Finanzas.hoy).split()[0] +
-                                                   "','YYYY-mm-dd'))")[0]
+        Finanzas.saldos = Finanzas.getFunctionJson("getSaldos('" + Finanzas.fecha.getInitialDateF() + "')")[0]
 
     @staticmethod
     def execProcedure(proc, params=None):
@@ -28,7 +58,7 @@ class Finanzas:
         if params is None:
             params = []
         Finanzas.con.execProcedure(proc, params)
-        pass
+        Finanzas.con.okay()
 
     @staticmethod
     def getFunctionJson(func):
@@ -42,6 +72,7 @@ class Finanzas:
         for ix, resultSet in enumerate(Finanzas.con.getCursor().getimplicitresults()):
             for row in resultSet:
                 aux.append(json.loads(row[0]))
+        print(aux)
         return aux
 
     @staticmethod
@@ -50,9 +81,15 @@ class Finanzas:
 
     @staticmethod
     def getGastos():
+        query = "SELECT Compra, Costo, descripcion FROM COMPRAS " +\
+                                         "WHERE (M =" + str(Finanzas.initFecha.strftime('%m')) +\
+                                         " AND A =" + str(Finanzas.initFecha.strftime('%Y')) +\
+                                         ") OR (M =-1 AND PAGADO = 0)"
+        print(query)
         return Finanzas.con.execSelectPd("SELECT Compra, Costo, descripcion FROM COMPRAS " +
-                                         "WHERE (A =" + str(Finanzas.hoy.year) + " AND M =" +
-                                         str(Finanzas.hoy.month) + ") OR (M =-1 AND PAGADO = 0)")
+                                         "WHERE (M =" + str(Finanzas.initFecha.strftime('%m')) +
+                                         " AND A =" + str(Finanzas.initFecha.strftime('%Y')) +
+                                         ") OR (M =-1 AND PAGADO = 0)")
 
     @staticmethod
     def getMonth(numMonth):
@@ -241,3 +278,6 @@ class Finanzas:
             Finanzas.con.okay()
         else:
             Finanzas.con.NoOkay()
+
+
+

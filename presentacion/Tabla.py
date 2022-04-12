@@ -73,12 +73,12 @@ class TablaCompras(Tabla):
 
     def pagar(self):
         self.selectItem()
-        Finanzas.execProcedure("aplazarCompra", self.item['values'][0])
+        Finanzas.execProcedure("aplazarCompra", ["'" + self.item['values'][0] + "'"])
         pass
 
     def aplazar(self):
         self.selectItem()
-        Finanzas.execProcedure("itemComprado", self.item['values'][0])
+        Finanzas.execProcedure("itemComprado", ["'" + self.item['values'][0] + "'"])
 
     def selectItem(self, ah=None):
         curItem = self.tree.focus()

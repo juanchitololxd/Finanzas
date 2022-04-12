@@ -1,21 +1,22 @@
-import tkinter as tk
+from dominio.connection import  ConnectionSql, ConnectionOracle
 
-class Test:
+sql = ConnectionSql()
 
-    root = tk.Tk()
-    menu = tk.Frame()
-    panel = tk.Frame()
-    def __init__(self):
-        pass
+"""
+for i in sql.execSelect("SELECT * FROM COMPRAS"):
+    print(i) BIEN para selects"""
+#sql.execFunction("select dbo.getSaldos(3) AS NVARCHAR")
+aux = []
+x = sql.execSelect("EXEc getCompras 2,2,2; ")[0][0]
+print(type(x))
 
-    def start(self):
-        self.root.mainloop()
+"""
+for i in sql.execSelect(
+    'EXEC  getCompras 2,2,2;')
+   print(i)
+"""
 
-    def end(self):
-        self.root.destroy()
 
-app = Test()
 
-app.start()
-app.end()
+
 
