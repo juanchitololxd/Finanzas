@@ -34,14 +34,17 @@ class PopUpIngreso(PopUp):
     def cargueCampos(self):
         self.eValue = EntryRequired('Valor', self.root, tk.TOP)
         self.entradas = ttk.Combobox(master=self.root, state="readonly")
-        self.entradas['values'] = Finanzas.getCategories()
+        self.entradas['values'] = Finanzas.getCategorias()
         self.entradas.set("REPARTIR")
         self.entradas.pack(padx="20", pady="6")
 
     def cargueBoton(self):
         tk.Button(master=self.root, text="Subir",
-                 command=Finanzas.insertEntrada(self.eValue.get(), self.entradas.get())).pack(side=tk.BOTTOM)
+                  command=self.insertEntrada).pack()
         pass
+
+    def insertEntrada(self):
+        Finanzas.insertEntrada(self.eValue.get(), self.entradas.get())
 
 
 class PopUpEgreso(PopUp):

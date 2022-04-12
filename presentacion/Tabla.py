@@ -9,27 +9,27 @@ class Tabla:
     Componente que genera una tabla con su titulo y sus botones
     """
 
-    def __init__(self, data, root, widths):
+    def __init__(self, data, root):
         self.root = root
         self.cuadro = tk.Frame(master=self.root)
-        self.data = data
         self.font = ('Helvetica', '18', 'bold')
         self.item = {}
-        columns = []
-        for item in data:
-            columns += [item]
+        columns = data['titles']
         self.tree = ttk.Treeview(self.cuadro, columns=columns, show='headings')
         i = 0
-        for item in columns:
-            self.tree.column(item, width=widths[i], anchor='c')
-            self.tree.heading(item, text=item)
-            i += 1
+        for i in range(len(columns)):
+            self.tree.column(columns[i], width=data['widths'][i], anchor='c')
+            self.tree.heading(columns[i], text=columns[i])
+        self.cargarInfo(data['data'])
 
-        for i in range(len(data[columns[0]].keys())):
-            self.tree.insert('', tk.END, values=self.generateArr(columns, i))
         self.generateTitle()
         self.tree.pack()
         self.generateButtons()
+
+    def cargarInfo(self, data):
+        #self.tree.delete(self.tree.children)
+        for item in data:
+            self.tree.insert('', tk.END, values=item)
 
     def generateTitle(self):
         pass
@@ -48,8 +48,8 @@ class Tabla:
 
 
 class TablaCompras(Tabla):
-    def __init__(self, data, root, widths):
-        super().__init__(data, root, widths)
+    def __init__(self, data, root):
+        super().__init__(data, root)
         self.tree.bind('<ButtonRelease-1>', self.selectItem)
 
     def generateTitle(self):
@@ -66,7 +66,7 @@ class TablaCompras(Tabla):
 
     @staticmethod
     def setGastosMensuales():
-        Finanzas.execOtherSql("UPDATE COMPRAS SET PAGADO = 0")
+        Finanzas.resetGastosMensuales()
 
     def agregar(self):
         popup = PopUpGasto(app)
@@ -86,8 +86,8 @@ class TablaCompras(Tabla):
 
 
 class TablaCategorias(Tabla):
-    def __init__(self, data, root, widths):
-        super().__init__(data, root, widths)
+    def __init__(self, data, root):
+        super().__init__(data, root)
 
     def generateTitle(self):
         tk.Label(self.cuadro, text="CATEGORIAS", font=self.font).pack(side=tk.TOP)
@@ -96,3 +96,16 @@ class TablaCategorias(Tabla):
         buttons = tk.Frame(self.cuadro)
         buttons.pack(side=tk.BOTTOM)
         tk.Button(master=buttons, text="Agregar").pack()
+
+"""class TablaDeudas(Tabla):
+    def __init__(self, data, root):
+        super().__init__(data, root)
+
+    def generateTitle(self):
+        tk.Label(self.cuadro, text="DEUDAS", font=self.font).pack(side=tk.TOP)
+
+    def generateButtons(self):
+        buttons = tk.Frame(self.cuadro)
+        buttons.pack(side=tk.BOTTOM)
+        tk.Button(master=buttons, text="Pagar").pack()
+    """

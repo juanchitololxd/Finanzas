@@ -42,9 +42,9 @@ class App:
         :return:
         """
         Panel(self.panel)
-        TablaCompras(Finanzas.getGastos(), self.tablas, [100, 100, 100]).getTable().pack(side=tk.LEFT, padx=140)
-        TablaCategorias(Finanzas.getCategoriesAndVF(), self.tablas, [100, 100, 100]).getTable().pack(
-            side=tk.RIGHT, padx=140)
+        TablaCompras(Finanzas.getGastos(), self.tablas).getTable().pack(side=tk.LEFT, padx=150)
+        TablaCategorias(Finanzas.getCategoriesAndVF(), self.tablas).getTable().pack(
+            side=tk.RIGHT, padx=150)
         tk.Button(master=self.footer, text="GUARDAR", command=App.saveChanges).pack(side=tk.LEFT, padx=20)
         tk.Button(master=self.footer, text="DESCARTAR", command=App.discardChanges).pack(side=tk.RIGHT, padx=20)
 
@@ -74,5 +74,6 @@ def main():
     a = App()
     a.start()
     a.end()
+
 
 main()

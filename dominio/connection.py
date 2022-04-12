@@ -24,13 +24,15 @@ class Connection:
         """
         pd.read_sql(query, con=self.con)
 
-    def execInsNoCommit(self, query):
+    def execute(self, query):
         """
-        Realiza un insert sin hacer commit
+        Realiza un query, que va desde un select hasta un exec
         :param query: consulta
         """
-        print(query)
         self.cursor.execute(query)
+
+    def execProcedure(self, proc, params=None):
+        pass
 
     def okay(self):
         """
@@ -43,23 +45,14 @@ class Connection:
         """
         RollBack de todos los cambios
         """
-        self.cursor.execute("ROLLBACK")
+        self.cursor.rollback()
+        #self.cursor.execute("ROLLBACK")
         print("ROLLBACK")
 
     def close(self):
         self.cursor.close()
         self.con.close()
         print("Conexion cerrada")
-
-    def execSelect(self, query):
-        self.cursor.execute(query)
-        return self.cursor.fetchall()
-
-    def execFunction(self, query):
-        self.cursor.execute(query)
-
-    def execProcedure(self, proc, params=None):
-        pass
 
     def getCursor(self):
         return self.cursor
@@ -111,46 +104,33 @@ class ConnectionSql(Connection):
                                         r'Database=Finanzas;User Id=jp;Password=jp;'))
         self.con.autocommit = False
 
-    def test(self, proc, params=None):
-        return self.cursor.execute(proc)
+    @staticmethod
+    def processParams(params):
+        newParams = ''
+        if params is not None:
+            newParams = ''
+            for param in params:
+                newParams += "'" + param + "', "
+            newParams = newParams[0:len(newParams)-2]
+        newParams += ';'
+
+        return newParams
 
     def execProcedure(self, proc, params=None):
-        aux = " "
-        if params is not None:
-            for param in params:
-                aux += param + ", "
-            aux = aux[0:len(aux)-2]
-        return self.cursor.execute("exec " + proc + aux)
+        params = ConnectionSql.processParams(params)
+        self.cursor.execute("EXEC " + proc + params)
 
-    def execProcedureJson(self, proc, params=None):
-        sql = """\
-        DECLARE @out nvarchar(max);
-        EXEC [dbo].[getSaldos] '20211111', @out OUTPUT;
-        SELECT @out;
-        """
-        params = ("20211111",)
-        self.cursor.execute(sql).fetchone()
-        #       for i in self.cursor.getimplicitvalues():
-        #            print(i)
-        #rows = self.cursor.fetchval()
+    def execFunction(self, func, params=None):
+        params = ConnectionSql.processParams(params)
+        self.cursor.execute("""
+        declare @aux NVARCHAR(MAX);
+        EXEC @aux = {0} {1}
+        select @aux;
+        """.format(func, params))
 
-    @staticmethod
-    def getQueryFunction(func, tipo="NVARCHAR"):
-        """
-        Empaqueta el nombre de la funcion en un string para que la funcion pueda ser leida correctamente
-        :param func: nombre funcion con sus parametros (si tiene)
-        :param tipo: Tipo de retorno de la función. Defecto: sys_refcursor
-        :return: Lo que retorne la funcion
-        """
-        return 'select dbo.{0} AS NVARCHAR'.format(func)
 
-    def getQueryProcedure(func, tipo="NVARCHAR"):
-        """\
-        DECLARE @out nvarchar(max);
-        EXEC [dbo].[storedProcedure] @x = ?, @y = ?, @z = ?,@param_out = @out OUTPUT;
-        SELECT @out AS the_output;
-        """
-        pass
+
+
 
 
 """

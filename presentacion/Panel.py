@@ -25,7 +25,7 @@ class CuadroInfo:
         else:
             self.canvas.pack(side=tk.LEFT, padx=self.padX)
 
-    def check_hand(self):  # runs on mouse motion
+    def check_hand(self, *args):  # runs on mouse motion
         self.canvas.config(cursor="hand2")
 
     def selectFunction(self, title):
@@ -38,8 +38,6 @@ class CuadroInfo:
             self.canvas.bind("<Button-1>", Panel.openEgresos)
         elif title.upper() == "REPARTIBLE":
             self.canvas.bind("<Button-1>", Panel.repartir)
-        # elif title.upper() == "TOTAL":
-        #    self.canvas.bind("<Button-1>", Panel.getTotal)
         elif title.upper() == "DEUDAS":
             self.canvas.bind("<Button-1>", Panel.openDeudas)
 
@@ -56,11 +54,11 @@ class Panel:
         i = 0
         self.items = {
             'Mes': {'content': Finanzas.getMonth(Finanzas.hoy.month)},
-            'Ingresos': {'content': Finanzas.saldos['Ingresos']},
-            'Egresos': {'content': Finanzas.saldos['Egresos']},
-            'Repartible': {'content': Finanzas.saldos['Repartible']},
-            'Total': {'content': Finanzas.saldos['Total']},
-            'Deudas': {'content': Finanzas.saldos['Deudas']}
+            'Ingresos': {'content': Finanzas.saldos.Ingresos},
+            'Egresos': {'content': Finanzas.saldos.Egresos},
+            'Repartible': {'content': Finanzas.saldos.Repartible},
+            'Total': {'content': Finanzas.saldos.Total},
+            'Deudas': {'content': Finanzas.saldos.Deudas}
         }
         # self.canvas = Canvas()
         for item in self.items.keys():
@@ -81,7 +79,7 @@ class Panel:
             CuadroInfo(item, self.items[item]["content"], fila, True, (CuadroInfo.w / 2, 8))
 
     @staticmethod
-    def repartir():
+    def repartir(*args):
         Finanzas.repartirDinero()
 
     @staticmethod
@@ -89,13 +87,13 @@ class Panel:
         pass
 
     @staticmethod
-    def openIngresos():
+    def openIngresos(*args):
         PopUpIngreso(app)
 
     @staticmethod
-    def openEgresos():
+    def openEgresos(*args):
         PopUpEgreso(app)
 
     @staticmethod
-    def openDeudas():
-        return Finanzas.saldos['Deudas']
+    def openDeudas(*args):
+        pass
