@@ -7,6 +7,7 @@ class PopUp:
     """
     Ventana que puede ser una entrada o salida
     """
+
     def __init__(self, root, lines=1):
         self.lines = lines
         self.root = Toplevel(root)
@@ -32,7 +33,7 @@ class PopUpIngreso(PopUp):
         super().__init__(root)
 
     def cargueCampos(self):
-        self.eValue = EntryRequired('Valor', self.root, tk.TOP)
+        self.eValue = EntryRequired({"db": "Valor", "title": "Valor"}, self.root, tk.TOP)
         self.entradas = ttk.Combobox(master=self.root, state="readonly")
         self.entradas['values'] = Finanzas.getCategorias()
         self.entradas.set("REPARTIR")
@@ -56,7 +57,7 @@ class PopUpEgreso(PopUp):
         super().__init__(root)
 
     def cargueCampos(self):
-        self.eValue = EntryRequired('Valor', self.root, tk.TOP)
+        self.eValue = EntryRequired({"db": "Valor", "title": "Valor"}, self.root, tk.TOP)
         self.eVueltas = EntryNotRequired('Vueltas', self.root, tk.TOP)
         self.entradas = ttk.Combobox(master=self.root, state="readonly")
         self.entradas['values'] = Finanzas.getCategoriesAndSubcat()
@@ -64,8 +65,7 @@ class PopUpEgreso(PopUp):
 
     def cargueBoton(self):
         tk.Button(master=self.root, text="Subir",
-                 command=Finanzas.insertSalida(self.getTotal(), self.entradas.get())).pack()
-        pass
+                  command=Finanzas.insertSalida(self.getTotal(), self.entradas.get())).pack(pady=15)
 
     def getTotal(self):
         pass
@@ -75,24 +75,46 @@ class PopUpEgreso(PopUp):
             return ''
 
 
-
 class PopUpGasto(PopUp):
     def __init__(self, root, lines=2):
         self.buttonsRequired = []
         self.othersButtons = []
         super().__init__(root, lines)
 
+    def validate(self, *args):
+        for but in self.buttonsRequired:
+            but.draw()
+
     def cargueBoton(self):
-        pass
+        tk.Button(master=self.root, text="Subir",
+                  command=self.agregar).pack(pady=15)
+
+    def agregar(self):
+        flag = True
+        self.root.bind("<KeyPress>", self.validate)
+        for but in self.buttonsRequired:
+            but.draw()
+            if not but.isValid():
+                flag = False
+        if flag:
+            #Realizar json
+            rta = {}
+            for but in self.buttonsRequired:
+                rta[but.getNameDb()] = but.getValue()
+            for but in self.othersButtons:
+                rta[but.getNameDb()] = but.getValue()
+            Finanzas.insertar("COMPRAS", **rta)
+            self.root.destroy()
+
 
     def cargueCampos(self):
-        campos = [{'name': 'Compra', 'required': True},
-                  {'name': 'Subcategoria', 'required': True},
-                  {'name': 'Categoria', 'required': True},
-                  {'name': 'Costo', 'required': True},
-                  {'name': 'M', 'required': True},
-                  {'name': 'A', 'required': True},
-                  {'name': 'Descripcion', 'required': False}]
+        campos = [{'names': {'title':'Compra', 'db': 'Compra'}, 'required': True},
+                  {'names': {'title':'Subcategoria', 'db': 'Subcategoria'}, 'required': True},
+                  {'names': {'title':'Categoria', 'db': 'CAT'},  'required': True},
+                  {'names': {'title':'Costo', 'db': 'COSTO'}, 'required': True},
+                  {'names': {'title':'M', 'db': 'M'}, 'required': True},
+                  {'names': {'title':'A', 'db': 'A'}, 'required': True},
+                  {'names': {'title':'Descripcion','db': 'Descripcion'}, 'required': False}]
         itemsPerLine = round(len(campos) / self.lines)
         aux = 0
         for line in range(0, self.lines):
@@ -107,18 +129,17 @@ class PopUpGasto(PopUp):
     def appendCampos(self, fr, campos):
         for campo in campos:
             if bool(campo['required']):
-                self.buttonsRequired.append(EntryRequired(campo['name'], fr, tk.LEFT))
+                self.buttonsRequired.append(EntryRequired(campo['names'], fr, tk.LEFT))
             else:
-                self.othersButtons.append(EntryNotRequired(campo['name'], fr, tk.LEFT))
-
-
+                self.othersButtons.append(EntryNotRequired(campo['names'], fr, tk.LEFT))
 
 
 class EntryForm:
     def __init__(self, name, root, side):
         self.root = tk.Frame(master=root)
-        self.text = tk.Label(master=self.root, text=name, anchor="w")
+        self.text = tk.Label(master=self.root, text=name['title'], anchor="w")
         self.entry = tk.Entry(master=self.root)
+        self.nameDb = name['db']
         self.pack(side)
 
     def isValid(self):
@@ -132,8 +153,14 @@ class EntryForm:
         self.entry.pack(side=tk.BOTTOM)
         self.text.pack(side=tk.TOP)
 
-    def get(self):
+    def getNameDb(self):
+        return self.nameDb
+
+    def getValue(self):
         return self.entry.get()
+
+    def getName(self):
+        return self.text.cget("text")
 
 
 class EntryNotRequired(EntryForm):
@@ -157,8 +184,11 @@ class EntryRequired(EntryForm):
             valid = False
         return valid
 
-    def draw(self):
-        if not(self.isValid()):
+    def draw(self, *args):
+        if not (self.isValid()):
             self.entry.config(bd=1, highlightthickness=1, highlightbackground="red")
         else:
             self.entry.config(bd=0, highlightthickness=0, highlightbackground="white")
+
+    def get(self):
+        return self.entry.get()

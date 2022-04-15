@@ -8,6 +8,7 @@ class Tabla:
     """
     Componente que genera una tabla con su titulo y sus botones
     """
+    padYButton = 10
 
     def __init__(self, data, root):
         self.root = root
@@ -27,7 +28,6 @@ class Tabla:
         self.generateButtons()
 
     def cargarInfo(self, data):
-        #self.tree.delete(self.tree.children)
         for item in data:
             self.tree.insert('', tk.END, values=item)
 
@@ -40,12 +40,6 @@ class Tabla:
     def getTable(self):
         return self.cuadro
 
-    def generateArr(self, columns, i):
-        rta = []
-        for col in columns:
-            rta += [self.data[col][i]]
-        return rta
-
 
 class TablaCompras(Tabla):
     def __init__(self, data, root):
@@ -57,28 +51,31 @@ class TablaCompras(Tabla):
 
     def generateButtons(self):
         buttons = tk.Frame(self.cuadro)
-        buttons.pack(side=tk.BOTTOM)
-        tk.Button(buttons, text="Pagar", command=self.pagar, cursor="hand2").pack(padx=10, pady=10, side=tk.LEFT)
-        tk.Button(buttons, text="Aplazar", command=self.aplazar, cursor="hand2").pack(padx=10, pady=10, side=tk.RIGHT)
-        tk.Button(buttons, text="Resetear", command=TablaCompras.setGastosMensuales, cursor="hand2")\
-            .pack(padx=10, pady=10, side=tk.RIGHT)
-        tk.Button(buttons, text="Agregar", command=self.agregar, cursor="hand2").pack(padx=10, pady=10, side=tk.RIGHT)
+        buttons.pack(side=tk.BOTTOM, pady=self.padYButton)
+        tk.Button(buttons, text="Pagar", command=self.pagar, cursor="hand2").pack(padx=10, side=tk.LEFT)
+        tk.Button(buttons, text="Aplazar", command=self.aplazar, cursor="hand2").pack(padx=10, side=tk.RIGHT)
+        tk.Button(buttons, text="Resetear", command=TablaCompras.setGastosMensuales, cursor="hand2") \
+            .pack(padx=10, side=tk.RIGHT)
+        tk.Button(buttons, text="Agregar", command=self.agregar, cursor="hand2").pack(padx=10, side=tk.RIGHT)
 
     @staticmethod
     def setGastosMensuales():
         Finanzas.resetGastosMensuales()
 
-    def agregar(self):
-        popup = PopUpGasto(app)
+    def pagar(self, *args):
+        Finanzas.itemComprado(self.item['values'][0])
+        self.dropItem()
 
-    def pagar(self):
-        self.selectItem()
-        Finanzas.execProcedure("aplazarCompra", ["'" + self.item['values'][0] + "'"])
-        pass
+    def dropItem(self):
+        selected_item = self.tree.selection()[0]
+        self.tree.delete(selected_item)
 
-    def aplazar(self):
-        self.selectItem()
-        Finanzas.execProcedure("itemComprado", ["'" + self.item['values'][0] + "'"])
+    @staticmethod
+    def agregar(*args):
+        PopUpGasto(app)
+
+    def aplazar(self, *args):
+        Finanzas.aplazarCompra(self.item['values'][0])
 
     def selectItem(self, ah=None):
         curItem = self.tree.focus()
@@ -94,8 +91,9 @@ class TablaCategorias(Tabla):
 
     def generateButtons(self):
         buttons = tk.Frame(self.cuadro)
-        buttons.pack(side=tk.BOTTOM)
+        buttons.pack(side=tk.BOTTOM, pady=self.padYButton)
         tk.Button(master=buttons, text="Agregar").pack()
+
 
 """class TablaDeudas(Tabla):
     def __init__(self, data, root):

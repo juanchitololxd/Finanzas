@@ -47,6 +47,12 @@ class App:
             side=tk.RIGHT, padx=150)
         tk.Button(master=self.footer, text="GUARDAR", command=App.saveChanges).pack(side=tk.LEFT, padx=20)
         tk.Button(master=self.footer, text="DESCARTAR", command=App.discardChanges).pack(side=tk.RIGHT, padx=20)
+        self.entry = tk.Entry(master=self.footer)
+        self.entry.pack()
+        tk.Button(master=self.footer, text="Subir", command=self.exec).pack(padx=20)
+
+    def exec(self):
+        Finanzas.execQueryNoSelect(self.entry.get())
 
     @staticmethod
     def saveChanges():

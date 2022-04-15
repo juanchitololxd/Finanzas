@@ -144,7 +144,7 @@ class Finanzas:
 
     @staticmethod
     def resetGastosMensuales():
-        Finanzas.con.execute("UPDATE COMPRAS SET PAGADO = 0 WHERE ")
+        Finanzas.con.execute("UPDATE COMPRAS SET PAGADO = 0 WHERE M = '-1'")
 
     @staticmethod
     def insertEntrada(entrada, cat):
@@ -164,6 +164,18 @@ class Finanzas:
             Finanzas.con.execProcedure("deudaPagada", aux)
         else:
             print("No tienes deudas crack")
+
+    @staticmethod
+    def itemComprado(item):
+        Finanzas.con.execProcedure("itemComprado", [item])
+
+    @staticmethod
+    def aplazarCompra(item):
+        Finanzas.con.execProcedure("aplazarCompra", [item])
+
+    @staticmethod
+    def execQueryNoSelect(query):
+        Finanzas.con.execute(query)
 
     @staticmethod
     def pagarCategoriasVar(restante):
